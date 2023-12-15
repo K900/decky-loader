@@ -1,6 +1,6 @@
 import os, pwd, grp, sys, logging
 from subprocess import call, run, DEVNULL, PIPE, STDOUT
-from .customtypes import UserType
+from ..customtypes import UserType
 
 logger = logging.getLogger("localplatform")
 
@@ -162,6 +162,8 @@ def get_privileged_path() -> str:
     if path == None:
         path = get_unprivileged_path()
 
+    os.makedirs(path, exist_ok=True)
+
     return path
 
 def _parent_dir(path : str | None) -> str | None:
@@ -181,8 +183,13 @@ def get_unprivileged_path() -> str:
     
     if path == None:
         logger.debug("Unprivileged path is not properly configured. Making something up!")
-        # Expected path of loader binary is /home/deck/homebrew/service/PluginLoader
-        path = _parent_dir(_parent_dir(os.path.realpath(sys.argv[0])))
+
+        if hasattr(sys, 'frozen'):
+            # Expected path of loader binary is /home/deck/homebrew/service/PluginLoader
+            path = _parent_dir(_parent_dir(os.path.realpath(sys.argv[0])))
+        else:
+            # Expected path of this file is $src_root/backend/src/localplatformlinux.py
+            path = _parent_dir(_parent_dir(_parent_dir(__file__)))
 
         if path != None and not os.path.exists(path):
             path = None
@@ -191,6 +198,8 @@ def get_unprivileged_path() -> str:
         logger.warn("Unprivileged path is not properly configured. Defaulting to /home/deck/homebrew")
         path = "/home/deck/homebrew" # We give up
     
+    os.makedirs(path, exist_ok=True)
+
     return path
 
 

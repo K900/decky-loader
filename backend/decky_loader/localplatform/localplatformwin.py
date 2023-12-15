@@ -1,4 +1,4 @@
-from .customtypes import UserType
+from ..customtypes import UserType
 import os, sys
 
 def chown(path : str,  user : UserType = UserType.HOST_USER, recursive : bool = True) -> bool:
@@ -46,6 +46,8 @@ def get_unprivileged_path() -> str:
 
     if path == None:
         path = os.getenv("PRIVILEGED_PATH", os.path.join(os.path.expanduser("~"), "homebrew"))
+
+    os.makedirs(path, exist_ok=True)
 
     return path
 
